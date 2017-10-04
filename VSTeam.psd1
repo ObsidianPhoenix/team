@@ -135,6 +135,7 @@
       'Remove-VSTeamBuildTag',
       'Get-VSTeamBuildArtifact',
       'Update-VSTeamBuild',
+      'Update-VSTeamBuildDefinition',
       'Get-VSTeamOption',
       'Show-VSTeamProject',
       'Show-VSTeamBuildDefinition',

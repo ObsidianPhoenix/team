@@ -227,7 +227,46 @@ function Add-VSTeamBuildDefinition {
    }
 }
 
-function Remove-VSTeamBuildDefinition {
+function Update-VSTeamBuildDefinition {
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = "Medium")]
+    param(
+       [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
+       [string] $Id,
+
+       [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+       [string] $InFile
+    )
+ 
+    DynamicParam {
+       _buildProjectNameDynamicParam
+    }
+ 
+    process {
+       # Bind the parameter to a friendly variable
+       $ProjectName = $PSBoundParameters["ProjectName"]
+ 
+       # Build the url
+       $url = _buildURL -projectName $projectName -Id $Id
+ 
+       Write-Verbose $url
+
+       if ($Force -or $pscmdlet.ShouldProcess($item, "Update Build Definition")) {
+
+            # Call the REST API
+            if (_useWindowsAuthenticationOnPremise) {
+                $resp = Invoke-RestMethod -UserAgent (_getUserAgent) -Method Put -Uri $url -ContentType "application/json" -UseDefaultCredentials -InFile $inFile
+            }
+            else {
+                $resp = Invoke-RestMethod -UserAgent (_getUserAgent) -Method Put -Uri $url -ContentType "application/json" -Headers @{Authorization = "Basic $env:TEAM_PAT"} -InFile $inFile
+            }
+
+            return $resp
+        }
+    }
+ }
+
+
+ function Remove-VSTeamBuildDefinition {
    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = "High")]
    param(
       [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
@@ -268,4 +307,4 @@ Set-Alias Add-BuildDefinition Add-VSTeamBuildDefinition
 Set-Alias Show-BuildDefinition Show-VSTeamBuildDefinition
 Set-Alias Remove-BuildDefinition Remove-VSTeamBuildDefinition
 
-Export-ModuleMember -Alias * -Function Show-VSTeamBuildDefinition, Get-VSTeamBuildDefinition, Add-VSTeamBuildDefinition, Remove-VSTeamBuildDefinition
+Export-ModuleMember -Alias * -Function Show-VSTeamBuildDefinition, Get-VSTeamBuildDefinition, Add-VSTeamBuildDefinition, Remove-VSTeamBuildDefinition, Update-VSTeamBuildDefinition
